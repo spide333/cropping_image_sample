@@ -1,0 +1,1 @@
+# cropping_image_sample
