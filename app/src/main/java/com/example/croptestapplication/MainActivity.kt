@@ -18,13 +18,14 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView<ActivityMainBinding?>(this, R.layout.activity_main)
             .apply {
                 startButton.setOnClickListener { start() }
-                firstButton.setOnClickListener { createBox() }
-                secondButton.setOnClickListener { crop() }
+                firstButton.setOnClickListener { firstButtonClicked() }
+                secondButton.setOnClickListener { secondButtonClicked() }
                 lifecycleOwner = this@MainActivity
             }
     }
 
     private fun start() {
+        binding.imageView.onStartButtonClicked()
         val intent = Intent()
             .apply {
                 type = "image/*"
@@ -34,12 +35,12 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(intent, 1234)
     }
 
-    private fun createBox() {
-        binding.imageView.createBox()
+    private fun firstButtonClicked() {
+        binding.imageView.onFirstButtonClicked()
     }
 
-    private fun crop() {
-        binding.imageView.crop()
+    private fun secondButtonClicked() {
+        binding.imageView.onSecondButtonClicked()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
