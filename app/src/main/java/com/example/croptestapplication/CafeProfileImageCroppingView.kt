@@ -33,7 +33,18 @@ class CafeProfileImageCroppingView constructor(context: Context, attrs: Attribut
 
     private val scaleGestureDetector = ScaleGestureDetector(context, ScaleListener())
     private var scaleFactor = 1.0f
-    private var minScale = 1f
+    private var minScale = 0.75f
+    private var largeScale = 1f
+
+    private var defaultPivotX = 0f
+    private var defaultPivotY = 0f
+
+    init {
+        defaultPivotX = pivotX
+        defaultPivotY = pivotY
+//        pivotX = 0f
+//        pivotY = 0f
+    }
 
     inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(scaleGestureDetector: ScaleGestureDetector): Boolean {
@@ -160,25 +171,28 @@ class CafeProfileImageCroppingView constructor(context: Context, attrs: Attribut
     var rectf = RectF(0f, 0f, 100f, 100f)
     var rect = Rect()
 
+    var startSave = -1
+
     override fun onDraw(canvas: Canvas) {
         Log.d("test_by_sungchul", "onDraw: 1")
         super.onDraw(canvas)
-
+        canvas.drawColor(Color.RED)
+        startSave = canvas.save()
         drawSource(canvas)
-        if (createBox) {
-            createBox(canvas)
-        }
     }
 
     private fun createBox(canvas: Canvas) {
 
 //            Log.d("test_by_sungchul", "onDraw 3 : length : $length, bitmap w : ${sourceBitmap?.width}, bitmap h : ${sourceBitmap?.height}")
 
-        val dx = x / minScale
-        val dy = y / minScale
+        val dx = abs((width - x))
+        val dy = abs((height - y))
 
-//        val dx = abs(width * (1f - scaleFactor) / 2f)
-//        val dy = abs(height * (1f - scaleFactor) / 2f)
+        Log.d("test_by_sungchul",
+            "before restore : x : $x, y : $y, width : $width, height : $height")
+        canvas.restoreToCount(startSave)
+        Log.d("test_by_sungchul",
+            "after restore : x : $x, y : $y, width : $width, height : $height")
 
 //        val length = width / (scaleFactor)
 
@@ -188,16 +202,19 @@ class CafeProfileImageCroppingView constructor(context: Context, attrs: Attribut
         Log.d("test_by_sungchul",
             "- createBox dx : $dx, dy : $dy, x : $x, y : $y, scaleFactor : $scaleFactor, width : $width, height : $height")
 
-        canvas.save()
 //        canvas.translate(x / scaleFactor + width / 2f, y / scaleFactor + height / 2f)
+
+//        canvas.translate(dx, dy)
+
         canvas.translate(x, y)
+
         canvas.drawLine(0f, 0f, length, 0f, redPaint)
         canvas.drawLine(length, 0f, length, length, redPaint)
         canvas.drawLine(length, length, 0f, length, redPaint)
         canvas.drawLine(0f, length, 0f, 0f, redPaint)
 
 //        canvas.restore()
-        canvas.drawRect(x, y, x + 100f, y + 100f, greenPaint)
+        canvas.drawRect(0f, 0f, 200f, 200f, greenPaint)
         invalidate()
         if (needCrop) {
 //                scaledBitmap ?: return
@@ -216,7 +233,7 @@ class CafeProfileImageCroppingView constructor(context: Context, attrs: Attribut
         Log.d("test_by_sungchul", "drawSource: needBitmap : $needBitmap")
 
         sourceBitmap?.let {
-            canvas.drawColor(Color.RED)
+
 //            canvas.drawBitmap(it, 0f, (height - scaledBitmap!!.height) / 2f, redPaint)
             val scaleX = width.toFloat() / sourceBitmap!!.width.toFloat()
             val scaleY = (height.toFloat() + sy) / sourceBitmap!!.height.toFloat()
@@ -226,24 +243,31 @@ class CafeProfileImageCroppingView constructor(context: Context, attrs: Attribut
             val needScale = maxScale / minScale
 //            val needScale = maxScale
             this.minScale = needScale
+            largeScale = maxScale
 
             this.scaleX = needScale
             this.scaleY = needScale
 
             scaleFactor = needScale
 
-            val dx = abs(width * (1f - scaleFactor) / 2f)
-            val dy = abs(height * (1f - scaleFactor) / 2f)
+//            val dx = abs(width * (1f - scaleFactor) / 2f)
+//            val dy = abs(height * (1f - scaleFactor) / 2f)
 
+            val dx = abs((width - x) * (1f - scaleFactor))
+            val dy = abs((height - y) * (1f - scaleFactor))
             Log.d("test_by_sungchul",
                 "- scaleX : $scaleX, scaleY : $scaleY, minScale : $minScale, needScale : $needScale, curX : $x, curY : $y, dx : $dx, dy : $dy")
 
             canvas.save()
-            canvas.scale(minScale, minScale)
-//            canvas.translate(dx, dy)
 
+            canvas.scale(minScale, minScale)
             canvas.drawBitmap(it, 0f, 0f, redPaint)
 
+//            canvas.drawRect(dx, dy, dx + 200f, dy + 200f, greenPaint)
+
+            if (createBox) {
+                createBox(canvas)
+            }
 
 //            pivotX = dx
 //            pivotY = dy
@@ -267,13 +291,13 @@ class CafeProfileImageCroppingView constructor(context: Context, attrs: Attribut
     private var mActivePointerId = 0
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        Log.d("test_by_sungchul", "scale : $scaleFactor")
+        Log.d("test_by_sungchul", "scale : $scaleFactor, w : $width, h : $height")
 //        Log.d("test_by_sungchul", "onTouchEvent: action : ${event.action}")
 
         // 위에 제스처 디텍터
 
-        val dx = abs(width * (1f - scaleFactor) / 2f)
-        val dy = abs(height * (1f - scaleFactor) / 2f)
+        val dx = abs(width * (1f - scaleFactor) / 2f) + defaultPivotX
+        val dy = abs(height * (1f - scaleFactor) / 2f) + defaultPivotY
 
 
         val leftLimit = -dx
@@ -316,9 +340,9 @@ class CafeProfileImageCroppingView constructor(context: Context, attrs: Attribut
                 val nextY = this.y + y - mLastTouchY
 
                 this.x = when {
-                    nextX < -dx -> {
+                    nextX < 0f -> {
                         Log.d("test_by_sungchul", "onTouchEvent: x 1")
-                        -dx
+                        0f
                     }
                     nextX > dx -> {
                         Log.d("test_by_sungchul", "onTouchEvent: x 2")
@@ -331,9 +355,9 @@ class CafeProfileImageCroppingView constructor(context: Context, attrs: Attribut
                 }
 
                 this.y = when {
-                    nextY < -dy -> {
+                    nextY < 0f -> {
                         Log.d("test_by_sungchul", "onTouchEvent: y 1")
-                        -dy
+                        0f
                     }
                     nextY > dy -> {
                         Log.d("test_by_sungchul", "onTouchEvent: y 2")
