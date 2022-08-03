@@ -241,9 +241,10 @@ class CafeProfileImageCroppingView constructor(context: Context, attrs: Attribut
             val minScale = min(scaleX, scaleY)
             val maxScale = max(scaleX, scaleY)
             val needScale = maxScale / minScale
+
 //            val needScale = maxScale
+
             this.minScale = needScale
-            largeScale = maxScale
 
             this.scaleX = needScale
             this.scaleY = needScale
@@ -258,9 +259,10 @@ class CafeProfileImageCroppingView constructor(context: Context, attrs: Attribut
             Log.d("test_by_sungchul",
                 "- scaleX : $scaleX, scaleY : $scaleY, minScale : $minScale, needScale : $needScale, curX : $x, curY : $y, dx : $dx, dy : $dy")
 
-            canvas.save()
 
-            canvas.scale(minScale, minScale)
+            largeScale = maxScale
+            canvas.save()
+            canvas.scale(minScale, minScale, 0f, 0f)
             canvas.drawBitmap(it, 0f, 0f, redPaint)
 
 //            canvas.drawRect(dx, dy, dx + 200f, dy + 200f, greenPaint)
