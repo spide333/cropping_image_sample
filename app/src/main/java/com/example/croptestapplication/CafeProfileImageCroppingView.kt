@@ -240,7 +240,10 @@ class CafeProfileImageCroppingView constructor(context: Context, attrs: Attribut
 
             val minScale = min(scaleX, scaleY)
             val maxScale = max(scaleX, scaleY)
-            val needScale = maxScale / minScale
+
+//            val needScale = maxScale / minScale
+            val needScale = maxScale
+
 
 //            val needScale = maxScale
 
@@ -250,6 +253,10 @@ class CafeProfileImageCroppingView constructor(context: Context, attrs: Attribut
             this.scaleY = needScale
 
             scaleFactor = needScale
+
+            canvas.save()
+            canvas.scale(minScale, minScale, 0f, 0f)
+            canvas.drawBitmap(it, 0f, 0f, redPaint)
 
 //            val dx = abs(width * (1f - scaleFactor) / 2f)
 //            val dy = abs(height * (1f - scaleFactor) / 2f)
@@ -261,9 +268,7 @@ class CafeProfileImageCroppingView constructor(context: Context, attrs: Attribut
 
 
             largeScale = maxScale
-            canvas.save()
-            canvas.scale(minScale, minScale, 0f, 0f)
-            canvas.drawBitmap(it, 0f, 0f, redPaint)
+
 
 //            canvas.drawRect(dx, dy, dx + 200f, dy + 200f, greenPaint)
 
